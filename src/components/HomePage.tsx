@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import transactionService from '../services/transactionService';
 import { ApiResponse, Transaction } from '../types/transaction';
 import { bankConfigs } from '../types/bank';
+import LoginModal from './auth/LoginModal';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [selectedBank, setSelectedBank] = useState<string>('');
   const [filePath, setFilePath] = useState<string>('');
   const [statementKey, setStatementKey] = useState<string>('');
@@ -14,6 +17,7 @@ const HomePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleBankChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const bank = e.target.value;
@@ -52,8 +56,7 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const processTransaction = async () => {
     if (!file || !selectedBank || !statementKey || keyError) {
       setError('Please fill in all fields');
       return;
@@ -84,6 +87,20 @@ const HomePage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+    } else {
+      await processTransaction();
+    }
+  };
+
+  const handleLoginSuccess = async () => {
+    setShowLoginModal(false);
+    await processTransaction();
   };
 
   const selectedBankConfig = selectedBank ? bankConfigs[selectedBank] : null;
@@ -169,6 +186,12 @@ const HomePage: React.FC = () => {
           {isLoading ? 'Processing...' : 'Upload Statement'}
         </button>
       </div>
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={handleLoginSuccess}
+      />
     </div>
   );
 };

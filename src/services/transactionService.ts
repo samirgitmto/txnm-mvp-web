@@ -1,6 +1,7 @@
 import baseService from './api/baseService';
 import { Transaction, ApiResponse } from '../types/transaction';
 import { API_ENDPOINTS } from './api/endpoints';
+import SessionService from './sessionService';
 
 class TransactionService {
     async getTransactions(): Promise<Transaction[]> {
@@ -25,16 +26,30 @@ class TransactionService {
         formData.append('bankName', bankName.toLowerCase());
         formData.append('extractType', extractType);
 
-        const response = await baseService.post<ApiResponse<Transaction[]>>(
-            API_ENDPOINTS.TRANSACTIONS.GET,
-            formData,
-            {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
+        // Get the session ID from the session service
+        const sessionId = SessionService.getInstance().getSessionId();
+        if (sessionId) {
+            formData.append('sessionId', sessionId);
+            console.log('Adding sessionId to request:', sessionId);
+        } else {
+            console.warn('No sessionId available');
+        }
+
+        try {
+            const response = await baseService.post<ApiResponse<Transaction[]>>(
+                API_ENDPOINTS.TRANSACTIONS.GET,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
                 }
-            }
-        );
-        return response.data;
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error parsing transactions:', error);
+            throw error;
+        }
     }
 }
 

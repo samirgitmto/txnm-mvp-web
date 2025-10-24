@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
+import SessionService from '../../services/sessionService';
 import './DailyAnalytics.css';
 
 // Register ChartJS components
@@ -36,11 +37,19 @@ const DailyAnalytics: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const location = useLocation();
     const navigate = useNavigate();
+    const sessionService = SessionService.getInstance();
 
     useEffect(() => {
         const fetchDailyAnalytics = async () => {
             try {
-                const response = await fetch('http://localhost:8241/transactions/get/analytics/daily', {
+                const sessionId = sessionService.getSessionId();
+                if (!sessionId) {
+                    setError('No active session found');
+                    setLoading(false);
+                    return;
+                }
+
+                const response = await fetch(`http://localhost:8241/transactions/get/analytics/daily?sessionId=${sessionId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

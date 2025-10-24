@@ -1,0 +1,140 @@
+@startuml Frontend Architecture
+title TXNM Frontend Architecture
+
+' Styling
+skinparam component {
+    BackgroundColor #ECF0F1
+    BorderColor #2C3E50
+    ArrowColor #2C3E50
+}
+
+' Core Components
+package "Core" {
+    [React Application] as app
+    [TypeScript] as ts
+    [Material UI] as mui
+}
+
+package "State Management" {
+    [Redux Toolkit] as redux
+    [Auth Slice] as auth_slice
+    [Document Slice] as doc_slice
+    [Analytics Slice] as analytics_slice
+    [UI Slice] as ui_slice
+    [React Query] as query
+}
+
+package "Routing & Auth" {
+    [React Router] as router
+    [Auth Context] as auth
+    [Protected Routes] as protected
+}
+
+package "Components" {
+    package "Layout" {
+        [App Layout] as layout
+        [Navigation] as nav
+        [Sidebar] as sidebar
+    }
+    
+    package "Features" {
+        [Document Upload] as upload
+        [Analytics Dashboard] as dashboard
+        [AI Chat Interface] as chat
+        [User Profile] as profile
+    }
+    
+    package "Common" {
+        [Loading States] as loading
+        [Error Boundaries] as error
+        [Notifications] as notify
+    }
+}
+
+package "API Integration" {
+    [API Client] as api
+    [Axios Instance] as axios
+    [Request Interceptors] as interceptors
+}
+
+package "Utils" {
+    [Form Validation] as validation
+    [Date Formatting] as dates
+    [File Handling] as files
+    [Constants] as constants
+}
+
+' Relationships
+app --> ts
+app --> mui
+app --> redux
+app --> query
+app --> router
+app --> auth
+
+redux --> auth_slice
+redux --> doc_slice
+redux --> analytics_slice
+redux --> ui_slice
+
+redux --> protected
+auth --> protected
+
+protected --> layout
+layout --> nav
+layout --> sidebar
+
+layout --> upload
+layout --> dashboard
+layout --> chat
+layout --> profile
+
+upload --> api
+dashboard --> api
+chat --> api
+profile --> api
+
+api --> axios
+axios --> interceptors
+
+app --> loading
+app --> error
+app --> notify
+
+app --> validation
+app --> dates
+app --> files
+app --> constants
+
+' Notes
+note right of app
+  React 18
+  - Functional Components
+  - Hooks
+  - Context API
+end note
+
+note right of redux
+  State Management:
+  - Auth State
+  - Document State
+  - Analytics State
+  - UI State
+end note
+
+note right of api
+  API Integration:
+  - REST Endpoints
+  - WebSocket
+  - File Upload
+  - Error Handling
+end note
+
+note right of layout
+  Component Structure:
+  - Atomic Design
+  - Reusable Components
+  - Custom Hooks
+end note
+
+@enduml 

@@ -1,0 +1,64 @@
+@startuml TXNM General Flow
+title TXNM System General Flow
+
+' Styling
+skinparam sequence {
+    ArrowColor #2C3E50
+    ActorBorderColor #2C3E50
+    LifeLineBorderColor #2C3E50
+    ParticipantBorderColor #2C3E50
+    ParticipantBackgroundColor #ECF0F1
+}
+
+participant User
+participant Frontend
+participant Backend
+participant AuthService
+participant Storage
+participant Processor
+participant Analytics
+participant AIService
+
+' Authentication Flow
+alt Guest User
+    User -> Frontend: Click "Continue as Guest"
+    Frontend -> Frontend: Generate guest token
+    Frontend -> Backend: Initialize guest session
+    Backend -> Storage: Store session data
+else Registered User
+    User -> Frontend: Click "Login with Google"
+    Frontend -> AuthService: Authenticate
+    AuthService -> Backend: Return user info
+    Backend -> Storage: Store user session
+end
+
+' Document Processing
+User -> Frontend: Upload document
+Frontend -> Backend: Send document
+Backend -> Processor: Process document
+Processor -> Backend: Return extracted data
+Backend -> Analytics: Generate insights
+Analytics -> Backend: Return analytics
+Backend -> Storage: Store results
+Backend -> Frontend: Return results
+Frontend -> User: Display dashboard
+
+' Premium Features
+alt Premium User
+    User -> Frontend: Request AI analysis
+    Frontend -> Backend: Send request
+    Backend -> AIService: Process request
+    AIService -> Backend: Return insights
+    Backend -> Frontend: Return results
+    Frontend -> User: Display AI insights
+end
+
+' Session Management
+loop Every 30 minutes
+    Frontend -> Backend: Validate session
+    Backend -> Storage: Check session
+    Storage -> Backend: Return status
+    Backend -> Frontend: Update session
+end
+
+@enduml 

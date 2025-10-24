@@ -1,0 +1,93 @@
+@startuml Logged-in User Flow
+title Logged-in User Complete Flow
+
+' Styling
+skinparam sequence {
+    ArrowColor #2C3E50
+    ActorBorderColor #2C3E50
+    LifeLineBorderColor #2C3E50
+    ParticipantBorderColor #2C3E50
+    ParticipantBackgroundColor #ECF0F1
+}
+
+participant User
+participant Frontend
+participant Backend
+participant Google
+participant Database
+participant Redis
+participant PDFProcessor
+participant Analytics
+participant AIService
+participant PaymentGateway
+
+' Authentication
+User -> Frontend: Click "Login with Google"
+Frontend -> Google: Redirect to OAuth
+Google -> User: Show consent screen
+User -> Google: Authorize
+Google -> Frontend: Return auth code
+Frontend -> Backend: Send auth code
+Backend -> Google: Verify token
+Google -> Backend: Return user info
+Backend -> Database: Check user exists
+alt New User
+    Database -> Backend: User not found
+    Backend -> Database: Create user (FREE tier)
+else Existing User
+    Database -> Backend: Return user data
+end
+Backend -> Redis: Create session
+Backend -> Frontend: Return session token
+Frontend -> User: Show dashboard
+
+' PDF Upload and Processing
+User -> Frontend: Upload bank statement
+Frontend -> Backend: Send PDF
+Backend -> Backend: Validate file
+Backend -> Database: Store PDF metadata
+Backend -> PDFProcessor: Process PDF
+PDFProcessor -> Backend: Return extracted data
+Backend -> Analytics: Generate insights
+Analytics -> Backend: Return analytics
+Backend -> Database: Store analytics
+Backend -> Frontend: Return results
+Frontend -> User: Display analytics
+
+' Premium Features (if applicable)
+alt Premium User
+    User -> Frontend: Ask AI question
+    Frontend -> Backend: Send query
+    Backend -> Database: Load user context
+    Backend -> AIService: Process query
+    AIService -> Backend: Generate response
+    Backend -> Frontend: Return answer
+    Frontend -> User: Display response
+end
+
+' Tier Upgrade (if applicable)
+alt Basic/Free User
+    User -> Frontend: Select premium tier
+    Frontend -> Backend: Request upgrade
+    Backend -> PaymentGateway: Process payment
+    PaymentGateway -> Backend: Payment success
+    Backend -> Database: Update user tier
+    Backend -> Redis: Update cache
+    Backend -> Frontend: Confirm upgrade
+    Frontend -> User: Show new features
+end
+
+' Session Management
+loop Every 30 minutes
+    Backend -> Redis: Refresh session
+    Redis -> Backend: Session refreshed
+end
+
+' Logout
+User -> Frontend: Click logout
+Frontend -> Backend: Logout request
+Backend -> Redis: Clear session
+Backend -> Frontend: Logout success
+Frontend -> User: Show login page
+
+@enduml 

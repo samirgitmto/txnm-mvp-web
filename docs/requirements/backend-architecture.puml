@@ -1,0 +1,155 @@
+@startuml Backend Architecture
+title TXNM Backend Architecture
+
+' Styling
+skinparam component {
+    BackgroundColor #ECF0F1
+    BorderColor #2C3E50
+    ArrowColor #2C3E50
+}
+
+' Core Components
+package "Spring Boot Application" {
+    [Application Main] as main
+    [Configuration] as config
+    [Properties] as props
+}
+
+package "Security" {
+    [Spring Security] as security
+    [JWT Authentication] as jwt
+    [OAuth2 Integration] as oauth
+    [CORS Configuration] as cors
+}
+
+package "Controllers" {
+    [Auth Controller] as auth_controller
+    [Document Controller] as doc_controller
+    [Analytics Controller] as analytics_controller
+    [AI Controller] as ai_controller
+    [Payment Controller] as payment_controller
+}
+
+package "Services" {
+    [Auth Service] as auth_service
+    [Document Service] as doc_service
+    [Analytics Service] as analytics_service
+    [AI Service] as ai_service
+    [Payment Service] as payment_service
+    [Email Service] as email_service
+}
+
+package "Repositories" {
+    [User Repository] as user_repo
+    [Document Repository] as doc_repo
+    [Analytics Repository] as analytics_repo
+    [Subscription Repository] as sub_repo
+}
+
+package "Models" {
+    [Entities] as entities
+    [DTOs] as dtos
+    [Enums] as enums
+}
+
+package "Processing" {
+    [PDF Processor] as pdf_processor
+    [Data Extractor] as data_extractor
+    [Analytics Engine] as analytics_engine
+    [AI Engine] as ai_engine
+}
+
+package "Cache" {
+    [Redis Cache Manager] as cache
+    [Session Manager] as session
+    [Rate Limiter] as rate_limiter
+}
+
+package "Storage" {
+    [S3 Client] as s3
+    [File Manager] as file_manager
+    [Storage Policy Manager] as storage_policy
+}
+
+' Relationships
+main --> config
+config --> props
+
+main --> security
+security --> jwt
+security --> oauth
+security --> cors
+
+main --> auth_controller
+main --> doc_controller
+main --> analytics_controller
+main --> ai_controller
+main --> payment_controller
+
+auth_controller --> auth_service
+doc_controller --> doc_service
+analytics_controller --> analytics_service
+ai_controller --> ai_service
+payment_controller --> payment_service
+
+auth_service --> user_repo
+doc_service --> doc_repo
+analytics_service --> analytics_repo
+payment_service --> sub_repo
+
+doc_service --> pdf_processor
+doc_service --> data_extractor
+analytics_service --> analytics_engine
+ai_service --> ai_engine
+
+doc_service --> s3
+s3 --> file_manager
+s3 --> storage_policy
+storage_policy --> sub_repo
+
+main --> cache
+cache --> session
+cache --> rate_limiter
+
+' Notes
+note right of main
+  Spring Boot 3.x
+  - Java 17
+  - Spring Web
+  - Spring Data
+  - Spring Security
+end note
+
+note right of security
+  Security Features:
+  - JWT Authentication
+  - OAuth2 Integration
+  - Role-based Access
+  - Rate Limiting
+end note
+
+note right of auth_service
+  Service Layer:
+  - Business Logic
+  - Transaction Management
+  - Error Handling
+  - Event Publishing
+end note
+
+note right of pdf_processor
+  Processing Features:
+  - PDF Parsing
+  - Data Extraction
+  - Analytics Generation
+  - AI Processing
+end note
+
+note right of storage_policy
+  Storage Policies:
+  - Premium: Unlimited storage
+  - Basic: 3-5 documents
+  - Guest: No persistence
+  - Auto-cleanup for expired
+end note
+
+@enduml 

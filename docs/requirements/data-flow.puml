@@ -1,0 +1,90 @@
+@startuml Data Flow
+title TXNM Data Flow: Redis to Database
+
+skinparam component {
+    BackgroundColor #ECF0F1
+    BorderColor #2C3E50
+    ArrowColor #2C3E50
+}
+
+' Components
+package "Client Layer" {
+    [Frontend] as frontend
+}
+
+package "API & Session" {
+    [Backend API] as api
+    [Session Manager] as session
+}
+
+package "Temporary Cache" {
+    [Redis Cache] as redis
+    database "Redis Data" as redis_data {
+        [Session Info]
+        [Document Data]
+        [Transactions]
+        [Analytics]
+    }
+}
+
+package "Processing Layer" {
+    [Data Processor] as processor
+}
+
+package "Persistent Storage" {
+    [PostgreSQL DB] as db
+    database "Database Tables" as db_data {
+        [Users]
+        [Documents]
+        [Transactions]
+        [Analytics]
+    }
+}
+
+' Guest User Flow
+frontend --> api : 1. Upload Document (Guest)
+api --> redis : 2. Store in Redis
+redis --> redis_data : 3. Save with session token
+redis_data --> processor : 4. Process data
+
+' processor --> redis_data : \\n5. Store results
+processor --> result_sink : 5a. Generate results
+result_sink --> redis_data : 5b. Store results
+
+
+' User Registration Flow
+frontend --> api : 6. Google OAuth Login
+api --> db : 7. Check/Create User
+db --> db_data : 8. Store User Data
+
+' Data Migration Flow
+frontend --> api : 9. Register Account
+api --> redis : 10. Get Guest Data
+redis --> processor : 11. Process for Migration
+processor --> db : 12. Store in Database
+db --> db_data : 13. Save Permanent Data
+redis --> redis : 14. Clear Guest Data
+
+' Notes
+note right of redis_data
+  Temporary Storage:
+  - 30 min TTL
+  - Session-based
+  - Auto-expiring
+end note
+
+note right of db_data
+  Permanent Storage:
+  - User-linked
+  - Historical data
+  - Analytics ready
+end note
+
+note bottom of processor
+  Handles:
+  - Data validation
+  - Format conversion
+  - Analytics generation
+end note
+
+@enduml

@@ -1,0 +1,92 @@
+@startuml TXNM Use Cases
+title TXNM System Use Cases
+
+' Styling
+skinparam usecase {
+    BackgroundColor #ECF0F1
+    BorderColor #2C3E50
+    ArrowColor #2C3E50
+    ActorBorderColor #2C3E50
+}
+
+' Actors
+actor User
+actor Guest
+actor "Premium User" as Premium
+actor "Business User" as Business
+actor "System" as System
+
+' Authentication Package
+package "Authentication" {
+    usecase "Login with Google" as UC1
+    usecase "Continue as Guest" as UC2
+    usecase "Manage Session" as UC3
+}
+
+' Document Processing Package
+package "Document Processing" {
+    usecase "Upload Bank Statement" as UC4
+    usecase "Process PDF" as UC5
+    usecase "Generate Analytics" as UC6
+    usecase "View Dashboard" as UC7
+}
+
+' Premium Features Package
+package "Premium Features" {
+    usecase "AI Chat Analysis" as UC8
+    usecase "Custom Reports" as UC9
+    usecase "Advanced Analytics" as UC10
+}
+
+' Business Features Package
+package "Business Features" {
+    usecase "Upload Business Bills" as UC11
+    usecase "Generate Business Reports" as UC12
+    usecase "Email Reports" as UC13
+}
+
+' Subscription Management Package
+package "Subscription Management" {
+    usecase "Upgrade Tier" as UC14
+    usecase "View Usage" as UC15
+    usecase "Manage Subscription" as UC16
+}
+
+' Relationships
+User --> UC1
+User --> UC4
+User --> UC7
+User --> UC14
+User --> UC15
+User --> UC16
+
+Guest --> UC2
+Guest --> UC4
+Guest --> UC7
+
+Premium --> UC8
+Premium --> UC9
+Premium --> UC10
+
+Business --> UC11
+Business --> UC12
+Business --> UC13
+
+System --> UC3
+System --> UC5
+System --> UC6
+
+' Extensions
+UC1 <.. UC3 : <<extend>>
+UC2 <.. UC3 : <<extend>>
+UC4 <.. UC5 : <<extend>>
+UC5 <.. UC6 : <<extend>>
+UC11 <.. UC12 : <<extend>>
+UC12 <.. UC13 : <<extend>>
+
+' Inclusions
+UC7 ..> UC6 : <<include>>
+UC9 ..> UC10 : <<include>>
+UC12 ..> UC10 : <<include>>
+
+@enduml 

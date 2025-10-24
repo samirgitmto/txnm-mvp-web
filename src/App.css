@@ -60,8 +60,25 @@ nav {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-main {
-  padding: 0 1rem;
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  margin-top: 4rem; /* Height of the header */
+  padding: 2rem;
   max-width: 1200px;
-  margin: 0 auto;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+/* Add responsive styles */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+  }
 }

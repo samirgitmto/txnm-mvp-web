@@ -1,0 +1,56 @@
+@startuml Guest User Flow
+title Guest User Complete Flow
+
+' Styling
+skinparam sequence {
+    ArrowColor #2C3E50
+    ActorBorderColor #2C3E50
+    LifeLineBorderColor #2C3E50
+    ParticipantBorderColor #2C3E50
+    ParticipantBackgroundColor #ECF0F1
+}
+
+participant Guest
+participant Frontend
+participant Backend
+participant Redis
+participant PDFProcessor
+participant Analytics
+
+' Initial Session
+Guest -> Frontend: Click "Continue as Guest"
+Frontend -> Frontend: Generate temporary session token
+Frontend -> Backend: Initialize guest session with token
+Backend -> Redis: Store session data with token
+Redis -> Backend: Session data stored
+Backend -> Frontend: Confirm session initialization
+Frontend -> Guest: Show guest dashboard
+
+' PDF Upload and Processing
+Guest -> Frontend: Upload bank statement
+Frontend -> Backend: Send PDF with session token
+Backend -> Backend: Validate file
+Backend -> Redis: Store PDF metadata with token
+Backend -> PDFProcessor: Process PDF
+PDFProcessor -> Backend: Return extracted data
+Backend -> Analytics: Generate insights
+Analytics -> Backend: Return analytics
+Backend -> Redis: Store analytics with token
+Backend -> Frontend: Return results
+Frontend -> Guest: Display analytics
+
+' Session Management
+loop Every 5 minutes
+    Frontend -> Backend: Validate session token
+    Backend -> Redis: Check session validity
+    Redis -> Backend: Session status
+    Backend -> Frontend: Token validation result
+end
+
+' Session Expiry
+Frontend -> Frontend: Session token expired
+Frontend -> Guest: Show session expiry message
+Frontend -> Backend: Clear session data
+Backend -> Redis: Remove session data
+
+@enduml 

@@ -1,0 +1,128 @@
+@startuml System Architecture
+title TXNM System Architecture
+
+' Styling
+skinparam component {
+    BackgroundColor #ECF0F1
+    BorderColor #2C3E50
+    ArrowColor #2C3E50
+}
+
+' Layers
+package "Client Layer" {
+    [Web Frontend\nReact] as frontend
+    [Mobile App\nReact Native] as mobile
+}
+
+package "API Gateway" {
+    [API Gateway\nNginx] as gateway
+    [Load Balancer] as lb
+}
+
+package "Application Layer" {
+    [Auth Service] as auth
+    [Document Service] as doc
+    [Analytics Service] as analytics
+    [AI Service] as ai
+    [Payment Service] as payment
+}
+
+package "Processing Layer" {
+    [PDF Processor] as pdf
+    [Data Extractor] as extractor
+    [Analytics Engine] as engine
+    [AI Engine] as ai_engine
+}
+
+package "Storage Layer" {
+    database "PostgreSQL" as db {
+        [User Data]
+        [Document Data]
+        [Analytics Data]
+    }
+    
+    database "Redis Cache" as redis {
+        [Session Data]
+        [Guest Data]
+        [Cache]
+    }
+    
+    [Object Storage\nS3] as s3
+}
+
+package "External Services" {
+    [Google OAuth] as google
+    [Payment Gateway] as payment_gateway
+    [Email Service] as email
+}
+
+' Relationships
+frontend --> gateway
+mobile --> gateway
+gateway --> lb
+lb --> auth
+lb --> doc
+lb --> analytics
+lb --> ai
+lb --> payment
+
+auth --> google
+auth --> redis
+auth --> db
+
+doc --> pdf
+doc --> extractor
+doc --> s3
+doc --> redis
+doc --> db
+
+analytics --> engine
+analytics --> db
+analytics --> redis
+
+ai --> ai_engine
+ai --> db
+ai --> redis
+
+payment --> payment_gateway
+payment --> db
+
+' Notes
+note right of frontend
+  React SPA
+  - Material UI
+  - Redux
+  - React Query
+end note
+
+note right of gateway
+  Handles:
+  - Rate limiting
+  - SSL termination
+  - Request routing
+end note
+
+note right of db
+  Stores:
+  - User data
+  - Documents
+  - Analytics
+  - Subscriptions
+end note
+
+note right of redis
+  Caches:
+  - Sessions
+  - Guest data
+  - Analytics
+  - AI responses
+end note
+
+note right of s3
+  Stores:
+  - PDF files
+  - Generated reports
+  - Business bills
+end note
+
+@enduml 

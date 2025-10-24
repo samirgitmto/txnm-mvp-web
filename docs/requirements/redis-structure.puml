@@ -1,0 +1,118 @@
+@startuml Redis Data Structure
+title TXNM Redis Data Structure for Guest Sessions
+
+' Styling
+skinparam class {
+    BackgroundColor #ECF0F1
+    BorderColor #2C3E50
+    ArrowColor #2C3E50
+}
+
+' Redis Keys Structure
+class "Session Data" as session {
+    Key: "session:{token}"
+    Type: Hash
+    --
+    Fields:
+    * token: string
+    * created_at: timestamp
+    * expires_at: timestamp
+    * browser_id: string
+    * tab_id: string
+    * last_activity: timestamp
+}
+
+class "Document Data" as document {
+    Key: "session:{token}:documents:{doc_id}"
+    Type: Hash
+    --
+    Fields:
+    * doc_id: string
+    * file_name: string
+    * file_type: string
+    * file_size: integer
+    * upload_date: timestamp
+    * status: string
+    * document_type: string
+}
+
+class "Transaction Data" as transaction {
+    Key: "session:{token}:documents:{doc_id}:transactions"
+    Type: List of Hashes
+    --
+    Each transaction as Hash:
+    * amount: float
+    * date: string
+    * description: string
+    * category: string
+    * merchant: string
+}
+
+class "Analytics Data" as analytics {
+    Key: "session:{token}:documents:{doc_id}:analytics"
+    Type: Hash
+    --
+    Fields:
+    * report_type: string
+    * generated_at: timestamp
+    * data: json string
+}
+
+class "Session Index" as index {
+    Key: "sessions:active"
+    Type: Set
+    --
+    Contains: session tokens
+    Used for: Quick lookup of active sessions
+}
+
+class "Document Index" as doc_index {
+    Key: "session:{token}:documents"
+    Type: Set
+    --
+    Contains: document IDs
+    Used for: Quick document lookup
+}
+
+' Relationships
+session "1" -- "many" document : "contains"
+document "1" -- "many" transaction : "contains"
+document "1" -- "1" analytics : "has"
+index "1" -- "many" session : "tracks"
+session "1" -- "1" doc_index : "maintains"
+
+' Notes
+note bottom of session
+  Hash Structure:
+  HSET session:{token} field value
+  TTL: 30 minutes
+  Auto-expires if not refreshed
+end note
+
+note bottom of document
+  Hash Structure:
+  HSET session:{token}:documents:{doc_id} field value
+  TTL: Inherits from session
+  Deleted when session expires
+end note
+
+note bottom of transaction
+  List of Hashes:
+  RPUSH session:{token}:documents:{doc_id}:transactions {hash}
+  Efficient for batch operations
+end note
+
+note bottom of analytics
+  Hash Structure:
+  HSET session:{token}:documents:{doc_id}:analytics field value
+  Cached for quick access
+  Regenerated if expired
+end note
+
+note bottom of index
+  Set Operations:
+  SADD sessions:active {token}
+  SREM sessions:active {token}
+end note
+
+@enduml 

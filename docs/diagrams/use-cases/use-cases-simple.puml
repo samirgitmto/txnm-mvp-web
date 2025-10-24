@@ -1,0 +1,52 @@
+@startuml TXNM Simple Use Cases
+title TXNM System Core Use Cases
+
+' Styling
+skinparam usecase {
+    BackgroundColor #ECF0F1
+    BorderColor #2C3E50
+    ArrowColor #2C3E50
+    ActorBorderColor #2C3E50
+}
+
+' Actors
+actor "Basic User" as Basic
+actor "Premium User" as Premium
+actor "Business User" as Business
+
+' Core Features Package
+package "Core Features" {
+    usecase "Upload Documents" as UC1
+    usecase "View Analytics" as UC2
+    usecase "Generate Reports" as UC3
+}
+
+' Premium Features Package
+package "Premium Features" {
+    usecase "AI Analysis" as UC4
+    usecase "Custom Reports" as UC5
+}
+
+' Business Features Package
+package "Business Features" {
+    usecase "Business Analytics" as UC6
+    usecase "Email Reports" as UC7
+}
+
+' Relationships
+Basic --> UC1
+Basic --> UC2
+Basic --> UC3
+
+Premium --> UC4
+Premium --> UC5
+
+Business --> UC6
+Business --> UC7
+
+' Inclusions
+UC3 ..> UC2 : <<include>>
+UC5 ..> UC2 : <<include>>
+UC6 ..> UC2 : <<include>>
+
+@enduml 

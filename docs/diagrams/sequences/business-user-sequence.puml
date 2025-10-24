@@ -1,0 +1,61 @@
+@startuml Business User Flow
+title Business User (Premium) Complete Flow
+
+' Styling
+skinparam sequence {
+    ArrowColor #2C3E50
+    ActorBorderColor #2C3E50
+    LifeLineBorderColor #2C3E50
+    ParticipantBorderColor #2C3E50
+    ParticipantBackgroundColor #ECF0F1
+}
+
+participant Business
+participant Frontend
+participant Backend
+participant Google
+participant Database
+participant Redis
+participant BillProcessor
+participant AIService
+participant EmailService
+
+' Authentication (Same as logged-in user)
+Business -> Frontend: Click "Login with Google"
+Frontend -> Google: Redirect to OAuth
+Google -> Business: Show consent screen
+Business -> Google: Authorize
+Google -> Frontend: Return auth code
+Frontend -> Backend: Send auth code
+Backend -> Google: Verify token
+Google -> Backend: Return user info
+Backend -> Database: Check business account
+Database -> Backend: Return business data
+Backend -> Redis: Create session
+Backend -> Frontend: Return session token
+Frontend -> Business: Show business dashboard
+
+' Business Bill Processing
+Business -> Frontend: Upload business bills
+Frontend -> Backend: Send bills
+Backend -> BillProcessor: Process bills
+BillProcessor -> Backend: Return extracted data
+Backend -> AIService: Generate business insights
+AIService -> Backend: Return analytics
+Backend -> Database: Store results
+Backend -> EmailService: Send report
+EmailService -> Business: Deliver report
+Backend -> Frontend: Update dashboard
+Frontend -> Business: Show business analytics
+
+' Business-specific Features
+Business -> Frontend: Request custom report
+Frontend -> Backend: Generate report
+Backend -> AIService: Process business data
+AIService -> Backend: Return insights
+Backend -> EmailService: Send custom report
+EmailService -> Business: Deliver report
+Backend -> Frontend: Update dashboard
+Frontend -> Business: Show updated analytics
+
+@enduml 

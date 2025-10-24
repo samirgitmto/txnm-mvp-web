@@ -1,0 +1,129 @@
+@startuml TXNM ERD
+title TXNM System Entity Relationship Diagram
+
+' Styling
+skinparam class {
+    BackgroundColor #ECF0F1
+    BorderColor #2C3E50
+    ArrowColor #2C3E50
+}
+
+' Entities
+entity "User" as user {
+    * user_id : UUID <<PK>>
+    --
+    * email : VARCHAR(255) <<unique>>
+    * name : VARCHAR(255)
+    * tier : ENUM(FREE, BASIC, PREMIUM)
+    * created_at : TIMESTAMP
+    * last_login : TIMESTAMP
+    * is_business : BOOLEAN
+}
+
+entity "Session" as session {
+    * session_id : UUID <<PK>>
+    --
+    * user_id : UUID <<FK>>
+    * token : VARCHAR(255)
+    * created_at : TIMESTAMP
+    * expires_at : TIMESTAMP
+    * is_guest : BOOLEAN
+    * last_activity : TIMESTAMP
+    * browser_id : VARCHAR(255)
+    * tab_id : VARCHAR(255)
+}
+
+entity "Document" as document {
+    * document_id : UUID <<PK>>
+    --
+    * user_id : UUID <<FK>>
+    * file_name : VARCHAR(255)
+    * file_type : VARCHAR(50)
+    * file_size : INTEGER
+    * upload_date : TIMESTAMP
+    * status : ENUM(PROCESSING, COMPLETED, FAILED)
+    * document_type : ENUM(BANK_STATEMENT, BUSINESS_BILL)
+}
+
+entity "Transaction" as transaction {
+    * transaction_id : UUID <<PK>>
+    --
+    * document_id : UUID <<FK>>
+    * amount : DECIMAL(15,2)
+    * date : DATE
+    * description : TEXT
+    * category : VARCHAR(100)
+    * merchant : VARCHAR(255)
+}
+
+entity "Analytics" as analytics {
+    * analytics_id : UUID <<PK>>
+    --
+    * document_id : UUID <<FK>>
+    * user_id : UUID <<FK>>
+    * report_type : VARCHAR(100)
+    * generated_at : TIMESTAMP
+    * data : JSONB
+}
+
+entity "AI_Interaction" as ai {
+    * interaction_id : UUID <<PK>>
+    --
+    * user_id : UUID <<FK>>
+    * query : TEXT
+    * response : TEXT
+    * created_at : TIMESTAMP
+    * context : JSONB
+}
+
+entity "Subscription" as subscription {
+    * subscription_id : UUID <<PK>>
+    --
+    * user_id : UUID <<FK>>
+    * tier : ENUM(FREE, BASIC, PREMIUM)
+    * start_date : DATE
+    * end_date : DATE
+    * status : ENUM(ACTIVE, EXPIRED, CANCELLED)
+    * payment_id : VARCHAR(255)
+}
+
+' Relationships
+user ||--o{ session : "has"
+user ||--o{ document : "uploads"
+user ||--o{ analytics : "views"
+user ||--o{ ai : "interacts with"
+user ||--o| subscription : "has"
+
+document ||--o{ transaction : "contains"
+document ||--o{ analytics : "generates"
+
+' Notes
+note bottom of user
+  Stores both regular and business users
+  Email is unique identifier for Google OAuth
+end note
+
+note bottom of document
+  Handles both bank statements and business bills
+  Persisted for logged-in users only
+end note
+
+note bottom of analytics
+  Stores generated reports and insights
+  Persisted for logged-in users only
+end note
+
+note bottom of session
+  Guest sessions:
+  - Expire in 30 minutes
+  - Each browser tab gets unique session
+  - Frontend generates session tokens
+  - Data stored in Redis
+  
+  Logged-in sessions:
+  - Longer expiration
+  - Data persisted in database
+  - Linked to user_id
+end note
+
+@enduml 
